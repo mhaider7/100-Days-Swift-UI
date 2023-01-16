@@ -1,0 +1,150 @@
+import SwiftUI
+
+struct Score: View {
+    var text: String
+    
+    var body: some View {
+        Text(text)
+            .padding(10)
+            .background(.black)
+            .cornerRadius(15)
+            .font(.title)
+            .fontWeight(.semibold)
+            .foregroundColor(Color(red: 1, green: 0.4, blue: 0.1))
+    }
+}
+
+struct ButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 90))
+            .frame(width: 340)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+extension View {
+    func buttonModified() -> some View {
+        modifier(ButtonModifier())
+    }
+}
+
+struct ContentView: View {
+    @State private var showingScore = false
+    @State private var showingScore1 = false
+    @State private var scoreTitle = ""
+    @State private var finalScore = ""
+    @State private var score = 0
+    @State private var scoreCount = 0
+    @State private var opponent = Int.random(in: 0...2)
+    //@State private var color = false
+    @State private var winLose = Bool.random()
+    
+    @State private var move = ["🪨", "📄", "✂️"]
+    
+    var title: some View {
+        Text("Rock Paper Scissors")
+            .font(.largeTitle)
+            .bold()
+            .padding(30)
+    }
+    
+    var body: some View {
+        ZStack {
+            RadialGradient(colors: [.white,  .gray, Color(red: 1, green: 0.4, blue: 0.1)], center: .init(x: 0.5, y: 0.57), startRadius: 20, endRadius: 440)
+                .ignoresSafeArea()
+            
+            VStack {
+                Spacer()
+                title
+                
+                Score(text: "Score: \(score)")
+                
+                Text(winLose ? "Win The Game" : "Lose The Game")
+                    .font(.largeTitle)
+                    .fontWeight(.semibold)
+                
+                Text(move[opponent])
+                    .font(.system(size: 200))
+                    .padding(30)
+                    
+                
+                HStack {
+                    ForEach(0..<3) { number in
+                        Button(move[number]) {
+                            shoot(number)
+                        }
+                    }
+                }
+                .buttonModified()
+                
+                Spacer()
+                Spacer()
+            }
+            .foregroundColor(.white)
+            .shadow(radius: 6)
+            
+            .alert(scoreTitle, isPresented: $showingScore) {
+                Button("Continue", action: askQuestion)
+            } message: {
+                Text("Your score is \(score)")
+            }
+            
+            .alert(finalScore, isPresented: $showingScore1) {
+                    Button("Play Again", action: startOver)
+                } message: {
+                    Text("Final score: \(score)/10")
+                }
+        }
+    }
+    
+    func shoot(_ choice: Int) {
+        switch (winLose, opponent, choice) {
+        case (true, 0, 1):
+            scoreTitle = "Correct"
+            score += 1
+        case (true, 1, 2):
+            scoreTitle = "Correct"
+            score += 1
+        case (true, 2,0):
+            scoreTitle = "Correct"
+            score += 1
+        case (false, 0, 2):
+            scoreTitle = "Correct"
+            score += 1
+        case (false, 1, 0):
+            scoreTitle = "Correct"
+            score += 1
+        case (false, 2, 1):
+            scoreTitle = "Correct"
+            score += 1
+        default:
+            scoreTitle = "Wrong"
+        }
+        showingScore = true
+    }
+    
+    func askQuestion() {
+        winLose.toggle()
+        opponent = Int.random(in: 0...2)
+        scoreCount += 1
+        
+        if scoreCount == 10 {
+            finalScore = "Game Over"
+            showingScore1 = true
+        }
+    }
+    
+    func startOver() {
+        opponent = Int.random(in: 0...2)
+        score = 0
+        scoreCount = 0
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}
